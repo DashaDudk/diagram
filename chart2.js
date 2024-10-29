@@ -1,12 +1,26 @@
 const ctx2 = document.getElementById('doughnut');
 
+async function fetchDoughnutData() {
+  try {
+    const response = await fetch('https://api.worldbank.org/v2/country/UKR/indicator/SP.DYN.CBRT.IN?format=json');
+    const data = await response.json();
+
+    const years = [];
+    const birthRates = [];
+
+    for (let year = 2023; year >= 2017; year--) {
+      const entry = data[1].find(item => item.date === String(year));
+      years.push(year);
+      birthRates.push(entry ? entry.value : null);  
+    }
+
   new Chart(ctx2, {
     type: 'doughnut',
     data: {
-      labels: ['2017', '2018', '2019', '2020', '2021', '2022'],
+      labels: years.reverse(),
       datasets: [{
-        label: 'народжуваність в Україні, тис.осіб',
-        data: [364.0, 335.9, 308.8, 299.1, 277.8, 209.4],
+        label: 'Народжуваність в Україні (на 1000 осіб),
+        data: birthRates.reverse(),
         borderWidth: 1,
         backgroundColor: [
             'rgba(240, 128, 128, 0.2)', 
@@ -15,6 +29,7 @@ const ctx2 = document.getElementById('doughnut');
             'rgba(188, 143, 143, 0.2)', 
             'rgba(153, 102, 255, 0.2)', 
             'rgba(0, 250, 154, 0.2)' 
+            'rgba(127, 255, 0, 1)'  
           ],
           borderColor: [
             'rgba(240, 128, 128, 1)', 
@@ -23,14 +38,22 @@ const ctx2 = document.getElementById('doughnut');
             'rgba(188, 143, 143, 1)', 
             'rgba(153, 102, 255, 1)', 
             'rgba(0, 250, 154, 1)'  
+            'rgba(127, 255, 0, 1)'  
           ]
       }]
     },
     options: {
-      scales: {
-        y: {
-          beginAtZero: true
+      responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
         }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Помилка завантаження даних для кільцевої діаграми: ", error);
+  }
+}
+
+fetchDoughnutData();
